@@ -2,13 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
@@ -18,14 +14,24 @@ async function startServer() {
   app.use(cors({ origin: '*', methods: ['POST','GET','OPTIONS'], allowedHeaders: ['Content-Type'] }));
   app.use(express.json());
 
-  const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
+  let aiClient: GoogleGenAI | null = null;
+  function getAiClient() {
+    if (!aiClient) {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY environment variable is required but missing.');
       }
+      aiClient = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
     }
-  });
+    return aiClient;
+  }
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'online' });
@@ -174,7 +180,7 @@ HARD CONSTRAINT: the sum of all durationMinutes values across every step you gen
 
 Return only valid JSON.`;
 
-    const response = await ai.models.generateContent({
+    const response = await getAiClient().models.generateContent({
       model: 'gemini-3.5-flash',
       contents: prompt,
       config: {
