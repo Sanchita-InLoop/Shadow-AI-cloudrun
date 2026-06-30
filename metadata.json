@@ -1,0 +1,6 @@
+{
+  "name": "Shadow AI Deadline Rescue",
+  "description": "A high-urgency scheduling engine that turns looming deadlines into customized, hyper-focused micro-task action plans.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
